@@ -1,13 +1,16 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-var logger = require("morgan");
+const logger = require("morgan");
+const cookieParser = require("cookie-parser");
 
-require("dotenv").config();
+
 const http = require("http");
 const connectDB = require("./config/database");
 
 const authRouter = require("./routes/authRouter");
+
+require("dotenv").config();
 
 const app = express();
 
@@ -20,6 +23,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(logger("dev"));//combined
+app.use(cookieParser());
 
 // Routes
 app.use("/auth", authRouter);
