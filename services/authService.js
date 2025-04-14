@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../models/UserModel');
 const { sendOTP } = require('./emailService');
 
 // Générer un code OTP
@@ -6,8 +6,16 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+// Extraire le nom d'utilisateur de l'email
+const extractUsernameFromEmail = (email) => {
+  return email.split('@')[0];
+};
+
 // Service d'inscription
-const registerUser = async (username, email) => {
+module.exports.registerUser = async (email) => {
+  // Extraire le nom d'utilisateur de l'email
+  const username = extractUsernameFromEmail(email);
+
   // Vérifier si l'utilisateur existe déjà
   const existingUser = await User.findOne({ $or: [{ email }, { username }] });
   if (existingUser) {
@@ -36,11 +44,11 @@ const registerUser = async (username, email) => {
     throw new Error('Erreur lors de l\'envoi de l\'OTP');
   }
 
-  return { email };
+  return { email, username };
 };
 
 // Service de vérification OTP
-const verifyUserOTP = async (email, otp) => {
+module.exports.verifyUserOTP = async (email, otp) => {
   const user = await User.findOne({ email });
   if (!user) {
     throw new Error('Utilisateur non trouvé');
@@ -71,7 +79,7 @@ const verifyUserOTP = async (email, otp) => {
 };
 
 // Service de connexion
-const loginUser = async (email) => {
+module.exports.loginUser = async (email) => {
   const user = await User.findOne({ email });
   if (!user) {
     throw new Error('Utilisateur non trouvé');
@@ -93,11 +101,5 @@ const loginUser = async (email) => {
     throw new Error('Erreur lors de l\'envoi de l\'OTP');
   }
 
-  return { email };
+  return { email, username: user.username };
 };
-
-module.exports = {
-  registerUser,
-  verifyUserOTP,
-  loginUser
-}; 
