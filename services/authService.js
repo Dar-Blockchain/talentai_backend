@@ -1,5 +1,6 @@
 const User = require('../models/UserModel');
 const { sendOTP } = require('./emailService');
+const jwt = require('jsonwebtoken');
 
 // Générer un code OTP
 const generateOTP = () => {
@@ -11,6 +12,13 @@ const extractUsernameFromEmail = (email) => {
   return email.split('@')[0];
 };
 
+// Générer un token JWT
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: '24h'
+  });
+};
+
 // Service d'inscription
 module.exports.registerUser = async (email) => {
   // Extraire le nom d'utilisateur de l'email
@@ -19,10 +27,30 @@ module.exports.registerUser = async (email) => {
   // Vérifier si l'utilisateur existe déjà
   const existingUser = await User.findOne({ $or: [{ email }, { username }] });
   if (existingUser) {
-    throw new Error('Email ou nom d\'utilisateur déjà utilisé');
+    // Si l'utilisateur existe, générer un nouveau code OTP
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 5 * 60000); // 5 minutes
+
+    existingUser.otp = {
+      code: otp,
+      expiresAt: otpExpiry
+    };
+    await existingUser.save();
+
+    // Envoyer le nouveau OTP par email
+    const emailSent = await sendOTP(email, otp);
+    if (!emailSent) {
+      throw new Error('Erreur lors de l\'envoi de l\'OTP');
+    }
+
+    return { 
+      email, 
+      username: existingUser.username,
+      message: 'Nouveau code OTP envoyé à votre email'
+    };
   }
 
-  // Générer OTP
+  // Générer OTP pour un nouvel utilisateur
   const otp = generateOTP();
   const otpExpiry = new Date(Date.now() + 5 * 60000); // 5 minutes
 
@@ -44,7 +72,11 @@ module.exports.registerUser = async (email) => {
     throw new Error('Erreur lors de l\'envoi de l\'OTP');
   }
 
-  return { email, username };
+  return { 
+    email, 
+    username,
+    message: 'Inscription réussie. Veuillez vérifier votre email pour le code OTP.'
+  };
 };
 
 // Service de vérification OTP
@@ -71,10 +103,14 @@ module.exports.verifyUserOTP = async (email, otp) => {
   user.lastLogin = new Date();
   await user.save();
 
+  // Générer le token JWT
+  const token = generateToken(user._id);
+
   return {
     id: user._id,
     username: user.username,
-    email: user.email
+    email: user.email,
+    token
   };
 };
 
