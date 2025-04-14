@@ -5,7 +5,7 @@ const connectDB = require('./config/database');
 const authRouter = require('./routes/authRouter');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 // Connexion à MongoDB
 connectDB();
