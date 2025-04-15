@@ -13,12 +13,34 @@ module.exports.createOrUpdateProfile = async (req, res) => {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
+    // Mettre à jour le rôle de l'utilisateur en fonction du type de profil
+    if (profileData.type) {
+      // Convertir le type de profil en rôle utilisateur
+      let userRole;
+      switch (profileData.type) {
+        case 'Candidate':
+          userRole = 'Candidat';
+          break;
+        case 'Company':
+          userRole = 'Company';
+          break;
+        default:
+          userRole = 'Candidat'; // Par défaut
+      }
+      
+      // Mettre à jour le rôle de l'utilisateur
+      await User.findByIdAndUpdate(userId, { role: userRole });
+    }
+
     // Créer ou mettre à jour le profil
     const profile = await Profile.findOneAndUpdate(
       { userId },
       { ...profileData, userId },
       { new: true, upsert: true }
     );
+
+    // Mettre à jour la référence du profil dans l'utilisateur
+    await User.findByIdAndUpdate(userId, { profile: profile._id });
 
     res.status(200).json({
       message: "Profil créé/mis à jour avec succès",
@@ -84,6 +106,9 @@ module.exports.deleteProfile = async (req, res) => {
     if (!profile) {
       return res.status(404).json({ message: "Profil non trouvé" });
     }
+
+    // Mettre à jour l'utilisateur pour supprimer la référence au profil
+    await User.findByIdAndUpdate(userId, { $unset: { profile: 1 } });
 
     res.status(200).json({ message: "Profil supprimé avec succès" });
   } catch (error) {
