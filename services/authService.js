@@ -107,35 +107,8 @@ module.exports.verifyUserOTP = async (email, otp) => {
   const token = generateToken(user._id);
 
   return {
-    id: user._id,
-    username: user.username,
-    email: user.email,
+    user,
     token
   };
 };
 
-// Service de connexion
-module.exports.loginUser = async (email) => {
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new Error('Utilisateur non trouvé');
-  }
-
-  // Générer un nouveau OTP pour la connexion
-  const otp = generateOTP();
-  const otpExpiry = new Date(Date.now() + 5 * 60000); // 5 minutes
-
-  user.otp = {
-    code: otp,
-    expiresAt: otpExpiry
-  };
-  await user.save();
-
-  // Envoyer l'OTP par email
-  const emailSent = await sendOTP(email, otp);
-  if (!emailSent) {
-    throw new Error('Erreur lors de l\'envoi de l\'OTP');
-  }
-
-  return { email, username: user.username };
-};

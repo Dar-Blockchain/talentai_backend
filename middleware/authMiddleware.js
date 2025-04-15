@@ -2,8 +2,10 @@ const jwt = require("jsonwebtoken");
 const userModel = require("../models/UserModel");
 
 const requireAuthUser = async (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(" ")[1];
+      const token = req.cookies.jwt_token;
+
+//    const authHeader = req.headers.authorization;
+  //  const token = authHeader && authHeader.split(" ")[1];
 
     if (token) {
         jwt.verify(token, process.env.Net_Secret, async (err, decodedToken) => {

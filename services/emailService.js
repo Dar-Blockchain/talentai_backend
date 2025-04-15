@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const getEmailTemplate = (otp) => {
+module.exports.getEmailTemplate = (otp) => {
   return `
     <!DOCTYPE html>
     <html>
@@ -118,7 +118,3 @@ const sendOTP = async (email, otp) => {
     return false;
   }
 };
-
-module.exports = {
-  sendOTP
-}; 
