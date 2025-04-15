@@ -14,7 +14,7 @@ const extractUsernameFromEmail = (email) => {
 
 // Générer un token JWT
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: userId }, process.env.Net_Secret, {
     expiresIn: '24h'
   });
 };
@@ -112,3 +112,7 @@ module.exports.verifyUserOTP = async (email, otp) => {
   };
 };
 
+module.exports.getAllUsers = async () => {
+  const users = await User.find();
+  return users;
+};

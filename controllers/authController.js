@@ -37,5 +37,28 @@ module.exports.verifyOTP = async (req, res) => {
 
 // Route de déconnexion
 module.exports.logout = (req, res) => {
-  res.status(200).json({ message: 'Déconnexion réussie' });
+  // Supprimer le cookie JWT
+  res.clearCookie('jwt_token');
+  
+  // Détruire la session si elle existe
+  if (req.session) {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Erreur lors de la destruction de la session:', err);
+        return res.status(500).json({ message: 'Erreur lors de la déconnexion' });
+      }
+      res.status(200).json({ message: 'Déconnexion réussie' });
+    });
+  } else {
+    res.status(200).json({ message: 'Déconnexion réussie' });
+  }
+};
+
+module.exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await authService.getAllUsers();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs' });
+  }
 };
