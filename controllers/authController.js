@@ -22,13 +22,13 @@ module.exports.verifyOTP = async (req, res) => {
     const { email, otp } = req.body;
     const result = await authService.verifyUserOTP(email, otp);
 
+    res.cookie('jwt_token', result.token, { httpOnly: false, maxAge: 2 * 60 * 60 * 1000 });
     // Créer la session avec le token
     res.status(200).json({ 
       message: 'Email vérifié avec succès',
       user: result.user,
       token: result.token
     });
-    res.cookie('jwt_token', result.token, { httpOnly: false, maxAge: maxAge * 1000 });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
