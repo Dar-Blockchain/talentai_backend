@@ -10,6 +10,7 @@ const http = require("http");
 const connectDB = require("./config/database");
 
 const authRouter = require("./routes/authRouter");
+const profileRouter = require("./routes/profileRouter");
 const evaluationRouter = require("./routes/evaluationRouter");
 
 require("dotenv").config();
@@ -29,6 +30,7 @@ app.use(cookieParser());
 
 // Routes
 app.use("/auth", authRouter);
+app.use("/profiles", profileRouter);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api', evaluationRouter);
 
