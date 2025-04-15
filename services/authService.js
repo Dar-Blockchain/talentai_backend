@@ -113,6 +113,39 @@ module.exports.verifyUserOTP = async (email, otp) => {
   };
 };
 
+// Service de connexion avec Gmail
+module.exports.connectWithGmail = async (email) => {
+  // Vérifier si l'utilisateur existe déjà
+  let user = await User.findOne({ email });
+  
+  if (!user) {
+    // Si l'utilisateur n'existe pas, créer un nouveau compte
+    const username = extractUsernameFromEmail(email);
+    
+    user = new User({
+      username,
+      email,
+      isVerified: true, // L'utilisateur est déjà vérifié via Gmail
+      lastLogin: new Date()
+    });
+    
+    await user.save();
+  } else {
+    // Mettre à jour la dernière connexion
+    user.lastLogin = new Date();
+    await user.save();
+  }
+  
+  // Générer le token JWT
+  const token = generateToken(user._id);
+  
+  return {
+    user,
+    token,
+    message: user.isVerified ? 'Connexion réussie' : 'Compte créé avec succès'
+  };
+};
+
 module.exports.getAllUsers = async () => {
   const users = await User.find();
   return users;

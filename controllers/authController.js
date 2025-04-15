@@ -20,10 +20,8 @@ module.exports.register = async (req, res) => {
 module.exports.verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    console.log(email, otp);
     const result = await authService.verifyUserOTP(email, otp);
-    console.log(result);
-   
+
     res.cookie('jwt_token', result.token, { httpOnly: false, maxAge: 2 * 60 * 60 * 1000 });
     // Créer la session avec le token
     res.status(200).json({ 
@@ -36,6 +34,24 @@ module.exports.verifyOTP = async (req, res) => {
   }
 };
 
+// Connexion avec Gmail
+module.exports.connectWithGmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const result = await authService.connectWithGmail(email);
+    
+    // Créer un cookie avec le token JWT
+    res.cookie('jwt_token', result.token, { httpOnly: false, maxAge: 2 * 60 * 60 * 1000 });
+    
+    res.status(200).json({
+      message: result.message,
+      user: result.user,
+      token: result.token
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 // Route de déconnexion
 module.exports.logout = (req, res) => {
