@@ -20,8 +20,10 @@ module.exports.register = async (req, res) => {
 module.exports.verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
+    console.log(email, otp);
     const result = await authService.verifyUserOTP(email, otp);
-
+    console.log(result);
+   
     res.cookie('jwt_token', result.token, { httpOnly: false, maxAge: 2 * 60 * 60 * 1000 });
     // Créer la session avec le token
     res.status(200).json({ 

@@ -82,6 +82,7 @@ module.exports.registerUser = async (email) => {
 // Service de vérification OTP
 module.exports.verifyUserOTP = async (email, otp) => {
   const user = await User.findOne({ email });
+  console.log(user);
   if (!user) {
     throw new Error('Utilisateur non trouvé');
   }
@@ -105,7 +106,7 @@ module.exports.verifyUserOTP = async (email, otp) => {
 
   // Générer le token JWT
   const token = generateToken(user._id);
-
+  console.log(token);
   return {
     user,
     token
