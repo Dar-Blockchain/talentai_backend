@@ -1,0 +1,134 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Talent AI API",
+    "version": "1.0.0",
+    "description": "API documentation for the Talent AI project"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3002",
+      "description": "Development server"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "requestBody": {
+          "description": "User registration data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" },
+                  "name": { "type": "string" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User registered successfully" },
+          "400": { "description": "Bad request" }
+        }
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Verify OTP for user registration",
+        "requestBody": {
+          "description": "OTP and identification data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": { "type": "string" },
+                  "otp": { "type": "string" }
+                },
+                "required": ["userId", "otp"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OTP verified successfully" },
+          "400": { "description": "Invalid OTP or data" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "requestBody": {
+          "description": "User login credentials",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User logged in successfully" },
+          "400": { "description": "Invalid login credentials" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User logout",
+        "responses": {
+          "200": { "description": "User logged out successfully" }
+        }
+      }
+    },
+    "/api/generate-questions": {
+      "post": {
+        "tags": ["Evaluation"],
+        "summary": "Generate situational interview questions based on skills and experience",
+        "requestBody": {
+          "description": "Skills and experience for generating questions",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skills": { "type": "string" },
+                  "experience": { "type": "string" }
+                },
+                "required": ["skills", "experience"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Successfully generated questions" },
+          "400": { "description": "Missing required parameters" },
+          "500": { "description": "Failed to generate questions" }
+        }
+      },
+      "get": {
+        "tags": ["Evaluation"],
+        "summary": "Debug endpoint for generate-questions",
+        "responses": {
+          "200": { "description": "Endpoint is active. Please use POST method with required skills and experience." }
+        }
+      }
+    }
+  }
+} 
