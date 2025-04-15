@@ -1,5 +1,4 @@
-const Profile = require('../models/ProfileModel');
-const User = require('../models/UserModel');
+const profileService = require('../services/profileService');
 
 // Créer ou mettre à jour un profil
 module.exports.createOrUpdateProfile = async (req, res) => {
@@ -7,40 +6,8 @@ module.exports.createOrUpdateProfile = async (req, res) => {
     const userId = req.user._id;
     const profileData = req.body;
 
-    // Vérifier si l'utilisateur existe
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
-    }
-
-    // Mettre à jour le rôle de l'utilisateur en fonction du type de profil
-    if (profileData.type) {
-      // Convertir le type de profil en rôle utilisateur
-      let userRole;
-      switch (profileData.type) {
-        case 'Candidate':
-          userRole = 'Candidat';
-          break;
-        case 'Company':
-          userRole = 'Company';
-          break;
-        default:
-          userRole = 'Candidat'; // Par défaut
-      }
-      
-      // Mettre à jour le rôle de l'utilisateur
-      await User.findByIdAndUpdate(userId, { role: userRole });
-    }
-
-    // Créer ou mettre à jour le profil
-    const profile = await Profile.findOneAndUpdate(
-      { userId },
-      { ...profileData, userId },
-      { new: true, upsert: true }
-    );
-
-    // Mettre à jour la référence du profil dans l'utilisateur
-    await User.findByIdAndUpdate(userId, { profile: profile._id });
+    // Utiliser le service pour créer ou mettre à jour le profil
+    const profile = await profileService.createOrUpdateProfile(userId, profileData);
 
     res.status(200).json({
       message: "Profil créé/mis à jour avec succès",
@@ -48,7 +15,7 @@ module.exports.createOrUpdateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error('Erreur lors de la création/mise à jour du profil:', error);
-    res.status(500).json({ message: "Erreur lors de la création/mise à jour du profil" });
+    res.status(500).json({ message: error.message || "Erreur lors de la création/mise à jour du profil" });
   }
 };
 
@@ -56,16 +23,14 @@ module.exports.createOrUpdateProfile = async (req, res) => {
 module.exports.getMyProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const profile = await Profile.findOne({ userId });
     
-    if (!profile) {
-      return res.status(404).json({ message: "Profil non trouvé" });
-    }
-
+    // Utiliser le service pour récupérer le profil
+    const profile = await profileService.getProfileByUserId(userId);
+    
     res.status(200).json(profile);
   } catch (error) {
     console.error('Erreur lors de la récupération du profil:', error);
-    res.status(500).json({ message: "Erreur lors de la récupération du profil" });
+    res.status(500).json({ message: error.message || "Erreur lors de la récupération du profil" });
   }
 };
 
@@ -73,27 +38,27 @@ module.exports.getMyProfile = async (req, res) => {
 module.exports.getProfileById = async (req, res) => {
   try {
     const { userId } = req.params;
-    const profile = await Profile.findOne({ userId });
     
-    if (!profile) {
-      return res.status(404).json({ message: "Profil non trouvé" });
-    }
-
+    // Utiliser le service pour récupérer le profil
+    const profile = await profileService.getProfileByUserId(userId);
+    
     res.status(200).json(profile);
   } catch (error) {
     console.error('Erreur lors de la récupération du profil:', error);
-    res.status(500).json({ message: "Erreur lors de la récupération du profil" });
+    res.status(500).json({ message: error.message || "Erreur lors de la récupération du profil" });
   }
 };
 
 // Récupérer tous les profils
 module.exports.getAllProfiles = async (req, res) => {
   try {
-    const profiles = await Profile.find();
+    // Utiliser le service pour récupérer tous les profils
+    const profiles = await profileService.getAllProfiles();
+    
     res.status(200).json(profiles);
   } catch (error) {
     console.error('Erreur lors de la récupération des profils:', error);
-    res.status(500).json({ message: "Erreur lors de la récupération des profils" });
+    res.status(500).json({ message: error.message || "Erreur lors de la récupération des profils" });
   }
 };
 
@@ -101,19 +66,14 @@ module.exports.getAllProfiles = async (req, res) => {
 module.exports.deleteProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const profile = await Profile.findOneAndDelete({ userId });
     
-    if (!profile) {
-      return res.status(404).json({ message: "Profil non trouvé" });
-    }
-
-    // Mettre à jour l'utilisateur pour supprimer la référence au profil
-    await User.findByIdAndUpdate(userId, { $unset: { profile: 1 } });
-
-    res.status(200).json({ message: "Profil supprimé avec succès" });
+    // Utiliser le service pour supprimer le profil
+    const result = await profileService.deleteProfile(userId);
+    
+    res.status(200).json(result);
   } catch (error) {
     console.error('Erreur lors de la suppression du profil:', error);
-    res.status(500).json({ message: "Erreur lors de la suppression du profil" });
+    res.status(500).json({ message: error.message || "Erreur lors de la suppression du profil" });
   }
 };
 
@@ -126,13 +86,13 @@ module.exports.searchProfilesBySkills = async (req, res) => {
     }
 
     const skillsArray = skills.split(',').map(skill => skill.trim());
-    const profiles = await Profile.find({
-      'skills.name': { $in: skillsArray }
-    });
-
+    
+    // Utiliser le service pour rechercher les profils
+    const profiles = await profileService.searchProfilesBySkills(skillsArray);
+    
     res.status(200).json(profiles);
   } catch (error) {
     console.error('Erreur lors de la recherche des profils:', error);
-    res.status(500).json({ message: "Erreur lors de la recherche des profils" });
+    res.status(500).json({ message: error.message || "Erreur lors de la recherche des profils" });
   }
 }; 
