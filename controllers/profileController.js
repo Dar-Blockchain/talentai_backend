@@ -24,6 +24,26 @@ module.exports.createOrUpdateProfile = async (req, res) => {
   }
 };
 
+// Créer ou mettre à jour un profil
+module.exports.createOrUpdateCompanyProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const profileData = req.body;
+
+
+    // Utiliser le service pour créer ou mettre à jour le profil
+    const profile = await profileService.createOrUpdateCompanyProfile(userId, profileData);
+
+    res.status(200).json({
+      message: "Profil créé/mis à jour avec succès",
+      profile
+    });
+  } catch (error) {
+    console.error('Erreur lors de la création/mise à jour du profil:', error);
+    res.status(500).json({ message: error.message || "Erreur lors de la création/mise à jour du profil" });
+  }
+};
+
 // Récupérer son propre profil
 module.exports.getMyProfile = async (req, res) => {
   try {
