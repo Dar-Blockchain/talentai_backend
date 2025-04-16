@@ -8,6 +8,7 @@ router.use(requireAuthUser);
 
 // Créer ou mettre à jour un profil
 router.post('/createOrUpdateProfile', profileController.createOrUpdateProfile);
+router.post('/createOrUpdateCompanyProfile', profileController.createOrUpdateCompanyProfile);
 
 // Récupérer le profil de l'utilisateur connecté
 router.get('/getMyProfile', profileController.getMyProfile);
