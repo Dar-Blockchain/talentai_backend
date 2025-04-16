@@ -2,9 +2,9 @@ const jwt = require("jsonwebtoken");
 const userModel = require("../models/UserModel");
 
 const requireAuthUser = async (req, res, next) => {
-    //  const token = req.cookies.jwt_token;
+     // const token = req.cookies.jwt_token;
 
-    const authHeader = req.headers.authorization;
+  const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(" ")[1];
 
     if (token) {
@@ -13,7 +13,7 @@ const requireAuthUser = async (req, res, next) => {
                 res.status(401).json({ message: "Token invalide ou expiré" });
             } else {
                 try {
-                    const user = await userModel.findById(decodedToken.id);
+                    const user = await userModel.findById(decodedToken.id).populate("profile");
                     if (!user) {
                         return res.status(401).json({ message: "Utilisateur non trouvé" });
                     }

@@ -32,7 +32,7 @@ app.use(cookieParser());
 app.use("/auth", authRouter);
 app.use("/profiles", profileRouter);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use('/api', evaluationRouter);
+app.use('/evaluation', evaluationRouter);
 
 // Route de base
 app.get("/", (req, res) => {
