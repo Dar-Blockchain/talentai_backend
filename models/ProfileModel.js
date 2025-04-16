@@ -13,7 +13,8 @@ const profileSchema = new mongoose.Schema(
     skills: [
       {
         name: String,
-        proficiencyLevel: String,
+        proficiencyLevel: Number,
+        experienceLevel:String,
       },
     ],
   },
