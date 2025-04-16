@@ -6,6 +6,11 @@ module.exports.createOrUpdateProfile = async (req, res) => {
     const userId = req.user._id;
     const profileData = req.body;
 
+    // Valider les données requises
+    if (!profileData.type) {
+      return res.status(400).json({ message: "Le type de profil est requis" });
+    }
+
     // Utiliser le service pour créer ou mettre à jour le profil
     const profile = await profileService.createOrUpdateProfile(userId, profileData);
 

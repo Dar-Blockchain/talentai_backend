@@ -10,9 +10,8 @@ module.exports.createOrUpdateProfile = async (userId, profileData) => {
       throw new Error('Utilisateur non trouvé');
     }
 
-    // Mettre à jour le rôle de l'utilisateur en fonction du type de profil
+    // Mettre à jour le rôle utilisateur
     if (profileData.type) {
-      // Convertir le type de profil en rôle utilisateur
       let userRole;
       switch (profileData.type) {
         case 'Candidate':
@@ -22,39 +21,40 @@ module.exports.createOrUpdateProfile = async (userId, profileData) => {
           userRole = 'Company';
           break;
         default:
-          userRole = 'Candidat'; // Par défaut
+          userRole = 'Candidat';
       }
-      
-      // Mettre à jour le rôle de l'utilisateur
       await User.findByIdAndUpdate(userId, { role: userRole });
     }
 
     // Vérifier si le profil existe déjà
     let profile = await Profile.findOne({ userId });
 
-    // Formater les compétences
-    const formattedSkills = profileData.skills ? profileData.skills.map(skill => ({
-      name: skill.name,
-      proficiencyLevel: skill.proficiencyLevel || 0
-    })) : [];
+    // Préparer les données de profil à sauvegarder
+    const profileDataToSave = {
+      userId,
+      type: profileData.type,
+    };
+
+    if (profileData.skills && Array.isArray(profileData.skills)) {
+      // Ajouter ou remplacer les skills existants
+      profileDataToSave.skills = profileData.skills;
+    }
 
     if (profile) {
-      // Mettre à jour le profil existant
+      // Mettre à jour en ajoutant les nouvelles skills aux existantes
       profile = await Profile.findOneAndUpdate(
         { userId },
         {
-          ...profileData,
-          skills: formattedSkills
+          ...profileDataToSave,
+          $push: {
+            skills: { $each: profileDataToSave.skills || [] },
+          },
         },
         { new: true, runValidators: true }
       );
     } else {
       // Créer un nouveau profil
-      profile = await Profile.create({
-        userId,
-        ...profileData,
-        skills: formattedSkills
-      });
+      profile = await Profile.create(profileDataToSave);
     }
 
     // Mettre à jour la référence du profil dans l'utilisateur
@@ -66,6 +66,7 @@ module.exports.createOrUpdateProfile = async (userId, profileData) => {
     throw error;
   }
 };
+
 
 // Récupérer un profil par ID utilisateur
 module.exports.getProfileByUserId = async (userId) => {
