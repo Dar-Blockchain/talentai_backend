@@ -4,60 +4,51 @@ const User = require('../models/UserModel');
 // Créer ou mettre à jour un profil utilisateur
 module.exports.createOrUpdateProfile = async (userId, profileData) => {
   try {
-    // Vérifier si l'utilisateur existe
     const user = await User.findById(userId);
     if (!user) {
       throw new Error('Utilisateur non trouvé');
     }
 
-    // Mettre à jour le rôle utilisateur
+    // Mise à jour du rôle utilisateur
     if (profileData.type) {
-      let userRole;
-      switch (profileData.type) {
-        case 'Candidate':
-          userRole = 'Candidat';
-          break;
-        case 'Company':
-          userRole = 'Company';
-          break;
-        default:
-          userRole = 'Candidat';
-      }
+      const userRole = profileData.type === 'Company' ? 'Company' : 'Candidat';
       await User.findByIdAndUpdate(userId, { role: userRole });
     }
 
-    // Vérifier si le profil existe déjà
+    // Rechercher un profil existant
     let profile = await Profile.findOne({ userId });
 
-    // Préparer les données de profil à sauvegarder
-    const profileDataToSave = {
-      userId,
-      type: profileData.type,
-    };
-
-    if (profileData.skills && Array.isArray(profileData.skills)) {
-      // Ajouter ou remplacer les skills existants
-      profileDataToSave.skills = profileData.skills;
-    }
-
-    if (profile) {
-      // Mettre à jour en ajoutant les nouvelles skills aux existantes
-      profile = await Profile.findOneAndUpdate(
-        { userId },
-        {
-          ...profileDataToSave,
-          $push: {
-            skills: { $each: profileDataToSave.skills || [] },
-          },
-        },
-        { new: true, runValidators: true }
-      );
+    if (!profile) {
+      // Créer un nouveau profil s'il n'existe pas encore
+      profile = await Profile.create({
+        userId,
+        type: profileData.type,
+        skills: profileData.skills || []
+      });
     } else {
-      // Créer un nouveau profil
-      profile = await Profile.create(profileDataToSave);
+      // Mise à jour des compétences existantes ou ajout de nouvelles compétences
+      if (profileData.skills && Array.isArray(profileData.skills)) {
+        profileData.skills.forEach((newSkill) => {
+          const existingSkill = profile.skills.find(skill => skill.name === newSkill.name);
+          if (existingSkill) {
+            // Modifier les compétences existantes
+            existingSkill.proficiencyLevel = newSkill.proficiencyLevel;
+            existingSkill.experienceLevel = newSkill.experienceLevel;
+          } else {
+            // Ajouter une nouvelle compétence au profil
+            profile.skills.push(newSkill);
+          }
+        });
+      }
+
+      // Mettre à jour le type du profil si fourni
+      profile.type = profileData.type || profile.type;
+
+      // Enregistrer les modifications
+      await profile.save();
     }
 
-    // Mettre à jour la référence du profil dans l'utilisateur
+    // Mise à jour référence du profil dans User
     await User.findByIdAndUpdate(userId, { profile: profile._id });
 
     return profile;
@@ -66,6 +57,7 @@ module.exports.createOrUpdateProfile = async (userId, profileData) => {
     throw error;
   }
 };
+
 
 
 // Récupérer un profil par ID utilisateur
