@@ -8,12 +8,9 @@ module.exports.createOrUpdateProfile = async (userId, profileData) => {
     if (!user) {
       throw new Error('Utilisateur non trouvé');
     }
-
-    // Mise à jour du rôle utilisateur
-    if (profileData.type) {
-      const userRole = profileData.type === 'Company' ? 'Company' : 'Candidat';
-      await User.findByIdAndUpdate(userId, { role: userRole });
-    }
+    
+    // Ensure user role is updated to Company
+    await User.findByIdAndUpdate(userId, { role: 'Candidat' });
 
     // Rechercher un profil existant
     let profile = await Profile.findOne({ userId });
