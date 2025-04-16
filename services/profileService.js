@@ -58,7 +58,53 @@ module.exports.createOrUpdateProfile = async (userId, profileData) => {
   }
 };
 
+// Create or update a Company profile
+exports.createOrUpdateCompanyProfile = async (userId, profileData) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found.');
+    }
 
+    // Ensure user role is updated to Company
+    await User.findByIdAndUpdate(userId, { role: 'Company' });
+
+    let profile = await Profile.findOne({ userId });
+
+    const profileDataToSave = {
+      userId,
+      type: 'Company',
+      companyDetails: {
+        name: profileData.name,
+        industry: profileData.industry,
+        size: profileData.size,
+        location: profileData.location,
+      },
+      requiredSkills: profileData.requiredSkills || [],
+      requiredExperienceLevel: profileData.requiredExperienceLevel || 'Entry Level'
+    };
+
+    if (profile) {
+      // Update existing profile
+      profile.type = 'Company';
+      profile.companyDetails = profileDataToSave.companyDetails;
+      profile.requiredSkills = profileDataToSave.requiredSkills;
+      profile.requiredExperienceLevel = profileDataToSave.requiredExperienceLevel;
+      await profile.save();
+    } else {
+      // Create new profile
+      profile = await Profile.create(profileDataToSave);
+    }
+
+    // Update the user's profile reference
+    await User.findByIdAndUpdate(userId, { profile: profile._id });
+
+    return profile;
+  } catch (error) {
+    console.error('Error creating/updating company profile:', error.message);
+    throw error;
+  }
+};
 
 // Récupérer un profil par ID utilisateur
 module.exports.getProfileByUserId = async (userId) => {
