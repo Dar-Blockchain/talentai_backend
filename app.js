@@ -10,6 +10,7 @@ const http = require("http");
 const connectDB = require("./config/database");
 
 const authRouter = require("./routes/authRouter");
+const agentIARouter = require("./routes/agentIARouter");
 const profileRouter = require("./routes/profileRouter");
 const evaluationRouter = require("./routes/evaluationRouter");
 
@@ -21,8 +22,8 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(logger("dev"));//combined
@@ -33,7 +34,7 @@ app.use("/auth", authRouter);
 app.use("/profiles", profileRouter);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/evaluation', evaluationRouter);
-
+app.use('/api', agentIARouter);
 // Route de base
 app.get("/", (req, res) => {
   res.json({ message: "Bienvenue sur l'API Express!" });

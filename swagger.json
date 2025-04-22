@@ -820,6 +820,113 @@
           }
         }
       }
+    },
+    "/api/create-agent": {
+      "post": {
+        "tags": ["Hedera"],
+        "summary": "Créer un nouvel agent autonome",
+        "description": "Crée une nouvelle paire de clés et un DID pour un agent autonome sur Hedera",
+        "responses": {
+          "200": {
+            "description": "Agent créé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "agent": {
+                      "type": "object",
+                      "properties": {
+                        "privateKey": {
+                          "type": "string",
+                          "description": "Clé privée de l'agent"
+                        },
+                        "publicKey": {
+                          "type": "string",
+                          "description": "Clé publique de l'agent"
+                        },
+                        "did": {
+                          "type": "string",
+                          "description": "DID de l'agent (Decentralized Identifier)",
+                          "example": "did:hedera:testnet:abc123"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Échec de la création de l'agent"
+          }
+        }
+      }
+    },
+    "/api/create-token": {
+      "post": {
+        "tags": ["Hedera"],
+        "summary": "Créer un nouveau token fongible",
+        "description": "Crée un nouveau token fongible sur le réseau Hedera",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "TalenToken",
+                    "description": "Nom du token"
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "example": "TTK",
+                    "description": "Symbole du token"
+                  },
+                  "initialSupply": {
+                    "type": "integer",
+                    "example": 1000,
+                    "description": "Quantité initiale de tokens"
+                  }
+                },
+                "required": ["name", "symbol", "initialSupply"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token créé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "tokenId": {
+                      "type": "string",
+                      "description": "ID du token créé",
+                      "example": "0.0.123456"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Échec de la création du token"
+          }
+        }
+      }
     }
   },
   "components": {
